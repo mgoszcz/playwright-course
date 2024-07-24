@@ -1,5 +1,7 @@
 import { test, expect } from '@playwright/test'
 
+import { loadHomePage, assertTitle } from '../helpers'
+
 test('Simple basic test', async ({ page }) => {
   await page.goto('https://example.com/')
   const pageTitle = await page.locator('h1')
@@ -61,4 +63,25 @@ test.describe('My first test suite', () => {
     const nonExistingElement = await page.locator('h5')
     await expect(nonExistingElement).not.toBeVisible()
   })
+})
+
+test.describe.parallel('Hooks', () => {
+  test.beforeEach(async ({ page }) => {
+    await page.goto('https://example.com/')
+  })
+
+  test('Screenshot', async ({ page }) => {
+    await page.screenshot({ path: 'example.png', fullPage: true })
+  })
+
+  test('Single element screenshot', async ({ page }) => {
+    const element = await page.locator('h1')
+    await element.screenshot({ path: 'single_element.png' })
+  })
+})
+
+test('Custom helpers', async ({ page }) => {
+  await loadHomePage(page)
+  // await page.pause() // pause execution and enables inspector
+  await assertTitle(page)
 })
