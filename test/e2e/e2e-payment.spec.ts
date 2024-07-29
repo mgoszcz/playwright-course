@@ -1,30 +1,30 @@
 import { test, expect } from '@playwright/test'
+import { LoginPage } from '../../page-objects/LoginPage'
+import { HomePage } from '../../page-objects/HomePage'
+import { PaymentPage } from '../../page-objects/PaymentPage'
+import { NavBar } from '../../page-objects/components/NavBar'
 
 test.describe.parallel('Make payment', () => {
+  let loginPage: LoginPage
+  let homePage: HomePage
+  let paymentPage: PaymentPage
+  let navBar: NavBar
   test.beforeEach(async ({ page }) => {
-    await page.goto('http://zero.webappsecurity.com/')
-    await page.click('#signin_button')
-    await page.fill('#user_login', 'username')
-    await page.fill('#user_password', 'password')
-    await page.click('text=Sign in')
+    homePage = new HomePage(page)
+    loginPage = new LoginPage(page)
+    paymentPage = new PaymentPage(page)
+    navBar = new NavBar(page)
+    await homePage.open()
+    await homePage.clickSignInButton()
+    await loginPage.login('username', 'password')
 
     await page.goto('http://zero.webappsecurity.com/bank/account-summary.html')
-    await page.click('#pay_bills_tab')
+    await navBar.payBills.click()
   })
 
   test('Should send new payment', async ({ page }) => {
-    await page.selectOption('#sp_payee', 'apple')
-    await page.click('#sp_get_payee_details')
-    const payeeDetails = await page.locator('#sp_payee_details')
-    await expect(payeeDetails).toHaveText('For 48944145651315 Apple account')
-    await page.selectOption('#sp_account', '6')
-    await page.fill('#sp_amount', '5000')
-    await page.fill('#sp_date', '2022-01-01')
-    await page.fill('#sp_description', 'Test')
-    await page.click('#pay_saved_payees')
-    const message = await page.locator('#alert_content > span')
-    await expect(message).toBeVisible()
-    await expect(message).toHaveText('The payment was successfully submitted.')
+    await paymentPage.createPayment()
+    await paymentPage.assertSuccessMessage()
   })
 
   test('Purchase foreign currency', async ({ page }) => {

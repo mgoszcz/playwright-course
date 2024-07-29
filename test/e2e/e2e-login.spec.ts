@@ -1,25 +1,27 @@
 import { test, expect } from '@playwright/test'
+import { LoginPage } from '../../page-objects/LoginPage'
+import { HomePage } from '../../page-objects/HomePage'
 
 test.describe.parallel('Login / Logout flow', () => {
+  let loginPage: LoginPage
+  let homePage: HomePage
   test.beforeEach(async ({ page }) => {
-    await page.goto('http://zero.webappsecurity.com/')
-    await page.click('#signin_button')
+    loginPage = new LoginPage(page)
+    homePage = new HomePage(page)
+    await homePage.open()
+    await homePage.clickSignInButton()
   })
 
   test('Negative scenario for login', async ({ page }) => {
-    await page.fill('#user_login', 'invalid username')
-    await page.fill('#user_password', 'invalid password')
-    await page.click('text=Sign in')
+    await loginPage.login('invalid username', 'invalid password')
+    await loginPage.wait(3000)
 
-    const errorMessage = await page.locator('.alert-error')
+    const errorMessage = await loginPage.getErrorMessage()
     await expect(errorMessage).toHaveText('Login and/or password are wrong.')
   })
 
   test('Positive Scenario for login and logout', async ({ page }) => {
-    await page.fill('#user_login', 'username')
-    await page.fill('#user_password', 'password')
-    await page.click('text=Sign in')
-
+    await loginPage.login('username', 'password')
     await page.goto('http://zero.webappsecurity.com/bank/account-summary.html')
 
     const accountSummaryTab = await page.locator('#account_summary_tab')

@@ -1,14 +1,18 @@
 import { test, expect } from '@playwright/test'
+import { LoginPage } from '../../page-objects/LoginPage'
+import { HomePage } from '../../page-objects/HomePage'
 
 const transactionsCount = [3, 3, 3, 2, 0, 0]
 
 test.describe('Account activity', () => {
+  let loginPage: LoginPage
+  let homePage: HomePage
   test.beforeEach(async ({ page }) => {
-    await page.goto('http://zero.webappsecurity.com/')
-    await page.click('#signin_button')
-    await page.fill('#user_login', 'username')
-    await page.fill('#user_password', 'password')
-    await page.click('text=Sign in')
+    homePage = new HomePage(page)
+    loginPage = new LoginPage(page)
+    await homePage.open()
+    await homePage.clickSignInButton()
+    await loginPage.login('username', 'password')
 
     await page.goto('http://zero.webappsecurity.com/bank/account-summary.html')
   })
